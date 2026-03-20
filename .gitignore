@@ -1,0 +1,42 @@
+# macOS
+.DS_Store
+
+# Python bytecode / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+.myGPT/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Build / packaging
+build/
+dist/
+*.egg-info/
+
+# Environment / secrets
+.env
+
+# Training artifacts
+checkpoints/
+out/
+logs/
+
+# Generated data / text outputs
+data/generated/
+
+# Obsidian
+.obsidian/
+
+# Editors
+.vscode/
+.idea/

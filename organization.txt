@@ -1,0 +1,39 @@
+project/
+├── model.py
+├── train.py
+├── generate.py
+tokenizers/
+    ├── char_tokenizer.py
+    ├── word_tokenizer.py
+    ├── subword_tokenizer.py
+    └── tiktoken_tokenizer.py
+├── config.py
+├── checkpoints/
+└── data/
+    ├── training/
+    └── generated/
+
+
+models/
+└── gpt_small.py
+
+tokenizers/
+├── char_tokenizer.py
+└── tiktoken_tokenizer.py
+
+A trained runnable system is really:
+(architecture) + (tokenizer) + (weights) + (generation settings)
+
+runs/
+├── shakespeare_char/
+│   ├── checkpoint.pt
+│   ├── config.json
+│   └── tokenizer.json
+├── rousseau_char/
+│   ├── checkpoint.pt
+│   ├── config.json
+│   └── tokenizer.json
+└── rousseau_tiktoken/
+    ├── checkpoint.pt
+    ├── config.json
+    └── tokenizer.json
