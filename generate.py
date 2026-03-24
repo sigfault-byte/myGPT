@@ -32,7 +32,7 @@ import torch
 from models.myGPT import GPTLanguageModel
 from my_tokenizers.bpe_tokenizer import BPETokenizer
 
-checkpoint_path = "runs/20260324-164416_bs64_blk256_emb128_h4_l4/checkpoint_last.pt"
+checkpoint_path = "runs/20260324-165748_bs64_blk256_emb128_h4_l4/checkpoint_last.pt"
 
 checkpoint = torch.load(checkpoint_path, map_location="cuda")
 
