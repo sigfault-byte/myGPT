@@ -59,8 +59,6 @@ def estimate_loss():
         losses = torch.zeros(eval_iters)
         for k in range(eval_iters):
             X, Y = get_batch(split)
-            X = X.to(device)
-            Y = Y.to(device)
 
             logits, loss = model(X, Y)
             losses[k] = loss.item()
@@ -111,7 +109,6 @@ for iter in range(max_iters):
             prompt="La liberté",
             max_new_tokens=block_size,
             block_size=block_size,
-            device=device,
         )
         logger.save_sample(iter, sample)
         # print(
@@ -120,8 +117,6 @@ for iter in range(max_iters):
 
     # sample a batch of data
     xb, yb = get_batch("train")
-    xb = xb.to(device)
-    yb = yb.to(device)
 
     assert xb.device == next(model.parameters()).device
     assert yb.device == next(model.parameters()).device
