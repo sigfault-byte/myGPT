@@ -1,3 +1,7 @@
+# large checkpoint
+*.pt
+*.pth
+
 # macOS
 .DS_Store
 
@@ -40,3 +44,4 @@ data/generated/
 # Editors
 .vscode/
 .idea/
+*.pt
