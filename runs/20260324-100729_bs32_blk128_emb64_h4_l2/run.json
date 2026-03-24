@@ -1,0 +1,16 @@
+{
+  "batch_size": 32,
+  "block_size": 128,
+  "n_embd": 64,
+  "n_head": 4,
+  "n_layer": 2,
+  "params_millions": 0.11874,
+  "learning_rate": 0.001,
+  "dataset": {
+    "path": "data/rousseau.txt",
+    "chars": 228259,
+    "millions": 0.228259
+  },
+  "tokenizer": "char",
+  "vocab_size": 84
+}
