@@ -16,7 +16,7 @@ eval_iters = 200
 
 # model
 block_size = 256  # T
-n_embd = 128  # C
-n_head = 4
-n_layer = 4
-dropout = 0.3
+n_embd = 396  # C
+n_head = 6
+n_layer = 6
+dropout = 0.2

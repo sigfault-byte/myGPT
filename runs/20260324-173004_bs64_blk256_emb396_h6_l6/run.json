@@ -1,0 +1,16 @@
+{
+  "batch_size": 64,
+  "block_size": 256,
+  "n_embd": 396,
+  "n_head": 6,
+  "n_layer": 6,
+  "params_millions": 11.494394,
+  "learning_rate": 0.0003,
+  "dataset": {
+    "path": "data/rousseau_ouvrage_pol_Vol1.txt",
+    "chars": 815846,
+    "millions": 0.815846
+  },
+  "tokenizer": "char",
+  "vocab_size": 98
+}

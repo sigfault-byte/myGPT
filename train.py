@@ -19,29 +19,29 @@ from generate_sample import generate_sample
 from logger_manager import LoggerManager
 from models.myGPT import GPTLanguageModel
 
-# from my_tokenizers.bigram_tokenizer import CharTokenizer
+# tokeninzer
+from my_tokenizers.bigram_tokenizer import CharTokenizer
 
-# with open("data/shakespear-1M.txt", "r", encoding="utf-8") as f:
 file = "data/rousseau_ouvrage_pol_Vol1.txt"
 with open(file, "r", encoding="utf-8") as f:
     text = f.read()
 
 ## Test BPE
-from my_tokenizers.bpe_tokenizer import BPETokenizer
+# from my_tokenizers.bpe_tokenizer import BPETokenizer
 
-tokenizer = BPETokenizer("rousseau_bpe.json")
+# tokenizer = BPETokenizer("rousseau_bpe.json")
 
-tokens = tokenizer.encode(text)
+# tokens = tokenizer.encode(text)
 # vocab_size = tokenizer.vocab_size
 ## Test BPE
 
-data = torch.tensor(tokens, dtype=torch.long)
+# data = torch.tensor(tokens, dtype=torch.long)
 
 torch.manual_seed(1337)
 
 
 text_size = len(text)
-# tokenizer = CharTokenizer.from_text(text)
+tokenizer = CharTokenizer.from_text(text)
 #
 vocab_size = tokenizer.vocab_size
 
