@@ -1,8 +1,9 @@
-from tokenizers import Tokenizer
 from tokenizers.decoders import ByteLevel as ByteLevelDecoder
 from tokenizers.models import BPE
 from tokenizers.pre_tokenizers import ByteLevel
 from tokenizers.trainers import BpeTrainer
+
+from tokenizers import Tokenizer
 
 # Path to corpus
 files = ["data/rousseau_ouvrage_pol_Vol1.txt"]
@@ -16,7 +17,7 @@ tokenizer.decoder = ByteLevelDecoder()
 
 # Trainer
 trainer = BpeTrainer(
-    vocab_size=1024,  # try 512 / 1024 / 2048 later
+    vocab_size=512,
     min_frequency=2,
     special_tokens=["[UNK]"],
 )
