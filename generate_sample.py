@@ -7,6 +7,7 @@ def generate_sample(
     prompt: str = "La liberté",
     max_new_tokens: int = 128,
     device: str = "cpu",
+    block_size: int = 128,
 ) -> str:
     was_training = model.training
     model.eval()
@@ -19,7 +20,7 @@ def generate_sample(
 
     with torch.no_grad():
         for _ in range(max_new_tokens):
-            idx_cond = context[:, -model.block_size :]  # or config block_size
+            idx_cond = context[:, -block_size:]  # or config block_size
             logits, _ = model(idx_cond)
             logits = logits[:, -1, :]
             probs = torch.softmax(logits, dim=-1)
