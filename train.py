@@ -18,17 +18,31 @@ from generate_loss_plot import generate_loss_plot
 from generate_sample import generate_sample
 from logger_manager import LoggerManager
 from models.myGPT import GPTLanguageModel
-from tokenizers.bigram_tokenizer import CharTokenizer
 
-torch.manual_seed(1337)
+# from my_tokenizers.bigram_tokenizer import CharTokenizer
 
 # with open("data/shakespear-1M.txt", "r", encoding="utf-8") as f:
 file = "data/rousseau_ouvrage_pol_Vol1.txt"
 with open(file, "r", encoding="utf-8") as f:
     text = f.read()
 
+## Test BPE
+from my_tokenizers.bpe_tokenizer import BPETokenizer
+
+tokenizer = BPETokenizer("rousseau_bpe.json")
+
+tokens = tokenizer.encode(text)
+# vocab_size = tokenizer.vocab_size
+## Test BPE
+
+data = torch.tensor(tokens, dtype=torch.long)
+
+torch.manual_seed(1337)
+
+
 text_size = len(text)
-tokenizer = CharTokenizer.from_text(text)
+# tokenizer = CharTokenizer.from_text(text)
+#
 vocab_size = tokenizer.vocab_size
 
 # Train and test splits
@@ -135,8 +149,7 @@ checkpoint = {
     "step": iter,
     "text_trained": file,
     "vocab_size": tokenizer.vocab_size,
-    "stoi": tokenizer.stoi,
-    "itos": tokenizer.itos,
+    "tokenizer_path": "rousseau_bpe.json",
 }
 
 

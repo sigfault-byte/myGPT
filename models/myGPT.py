@@ -4,7 +4,6 @@ from torch.nn import functional as F
 
 from config import (
     block_size,
-    device,
     dropout,
     n_embd,
     n_head,
