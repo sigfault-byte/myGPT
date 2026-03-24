@@ -18,9 +18,17 @@ def generate_sample(
     ).view(1, -1)
 
     with torch.no_grad():
-        out = model.generate(context, max_new_tokens=max_new_tokens)[0].tolist()
+        for _ in range(max_new_tokens):
+            idx_cond = context[:, -model.block_size :]  # or config block_size
+            logits, _ = model(idx_cond)
+            logits = logits[:, -1, :]
+            probs = torch.softmax(logits, dim=-1)
+            next_token = torch.multinomial(probs, num_samples=1)
+            context = torch.cat((context, next_token), dim=1)
+
+    out = tokenizer.decode(context[0].tolist())
 
     if was_training:
         model.train()
 
-    return tokenizer.decode(out)
+    return out

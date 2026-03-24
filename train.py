@@ -2,7 +2,7 @@ import os
 
 import torch
 
-from config_small import (
+from config import (
     batch_size,
     block_size,
     device,
@@ -23,7 +23,7 @@ from tokenizers.bigram_tokenizer import CharTokenizer
 torch.manual_seed(1337)
 
 # with open("data/shakespear-1M.txt", "r", encoding="utf-8") as f:
-file = "data/rousseau.txt"
+file = "data/rousseau_ouvrage_pol_Vol1.txt"
 with open(file, "r", encoding="utf-8") as f:
     text = f.read()
 
