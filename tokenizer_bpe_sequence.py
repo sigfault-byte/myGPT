@@ -14,7 +14,7 @@ tokenizer.pre_tokenizer = Sequence([Whitespace(), Punctuation()])
 
 # Trainer
 trainer = BpeTrainer(
-    vocab_size=512,
+    vocab_size=1024,
     min_frequency=3,
     special_tokens=["[UNK]"],
 )
@@ -23,7 +23,7 @@ trainer = BpeTrainer(
 tokenizer.train(files, trainer)
 
 # Save
-tokenizer.save("rousseau_bpe_2_vol1-4-5.json")
+tokenizer.save("rousseau_bpe_3_vol1-4-5.json")
 
 print("Tokenizer trained and saved!")
 print("Vocab size:", tokenizer.get_vocab_size())
