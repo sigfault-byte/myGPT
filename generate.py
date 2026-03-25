@@ -1,59 +1,96 @@
+import json
+from pathlib import Path
+
 import torch
 
-from config import device
+from config import get_device
+from generate_sample import generate_sample
 from models.myGPT import GPTLanguageModel
-from my_tokenizers.bigram_tokenizer import CharTokenizer
+from my_tokenizers.bigram_tokenizer import CharLevelTokenizer
+from my_tokenizers.bpe_tokenizer import BPETokenizer
 
-checkpoint_path = "runs/20260324-173004_bs64_blk256_emb396_h6_l6/checkpoint_last.pt"
+RUN_DIR = Path("runs/20260325-102949_bs16_blk128_emb128_h4_l4")
+CHECKPOINT_PATH = RUN_DIR / "checkpoint_last.pt"
+CONFIG_PATH = RUN_DIR / "run.json"
 
-checkpoint = torch.load(checkpoint_path, map_location=device)
+PROMPT = "la religion est"
+MAX_NEW_TOKENS = 500
 
-file = "data/rousseau_ouvrage_pol_Vol1.txt"
-with open(file, "r", encoding="utf-8") as f:
-    text = f.read()
 
-tokenizer = CharTokenizer.from_text(text)
+def load_run_config(config_path: Path) -> dict:
+    with open(config_path, "r", encoding="utf-8") as f:
+        return json.load(f)
 
-model = GPTLanguageModel(checkpoint["vocab_size"]).to(device)
-model.load_state_dict(checkpoint["model_state_dict"])
-model.eval()
 
-prompt = "la religion est"
-context = torch.tensor(tokenizer.encode(prompt), dtype=torch.long, device=device).view(
-    1, -1
-)
+def load_tokenizer(tokenizer_config: dict):
+    tokenizer_name = tokenizer_config["name"]
 
-with torch.no_grad():
-    out = model.generate(context, max_new_tokens=500)[0].tolist()
+    if tokenizer_name == "char":
+        return CharLevelTokenizer(
+            stoi=tokenizer_config["stoi"],
+            itos=tokenizer_config["itos"],
+        )
 
-print(tokenizer.decode(out))
+    if tokenizer_name == "bpe":
+        return BPETokenizer(tokenizer_config["tokenizer_path"])
 
-# import torch
+    raise ValueError(f"Unknown tokenizer: {tokenizer_name}")
 
-# from models.myGPT import GPTLanguageModel
-# from my_tokenizers.bpe_tokenizer import BPETokenizer
 
-# checkpoint_path = "runs/20260324-165748_bs64_blk256_emb128_h4_l4/checkpoint_last.pt"
+def build_model(run_config: dict) -> GPTLanguageModel:
+    return GPTLanguageModel(
+        vocab_size=run_config["vocab_size"],
+        block_size=run_config["block_size"],
+        n_embd=run_config["n_embd"],
+        n_head=run_config["n_head"],
+        n_layer=run_config["n_layer"],
+        dropout=run_config["dropout"],
+    )
 
-# checkpoint = torch.load(checkpoint_path, map_location="cuda")
 
-# tokenizer = BPETokenizer("rousseau_bpe.json")
+def warn_if_suspicious(device, run_config: dict):
+    params_millions = run_config.get("params_millions")
 
-# model = GPTLanguageModel(checkpoint["vocab_size"]).to("cuda")
-# model.load_state_dict(checkpoint["model_state_dict"])
-# model.eval()
+    if device.type == "cpu" and params_millions is not None and params_millions > 2:
+        print(
+            f"[Warning] Generating on CPU with a model of "
+            f"{params_millions:.2f}M parameters."
+        )
 
-# device = next(model.parameters()).device
+        try:
+            answer = input("Continue anyway? [y/N]: ").strip().lower()
+        except EOFError:
+            # !non-interactive environment (e.g. pipe, script)
+            print("[Abort] No input available. Abort.")
+            raise SystemExit(1)
 
-# prompt = "la religion est"
+        if answer not in ("y", "yes"):
+            print("[Abort] Generation cancelled.")
+            raise SystemExit(1)
 
-# context = torch.tensor(
-#     tokenizer.encode(prompt),
-#     dtype=torch.long,
-#     device=device,
-# ).view(1, -1)
 
-# with torch.no_grad():
-#     out = model.generate(context, max_new_tokens=500)[0].tolist()
+def main():
+    device = get_device()
+    run_config = load_run_config(CONFIG_PATH)
+    checkpoint = torch.load(CHECKPOINT_PATH, map_location=device)
 
-# print(tokenizer.decode(out))
+    warn_if_suspicious(device, run_config)
+
+    tokenizer = load_tokenizer(checkpoint["tokenizer"])
+
+    model = build_model(run_config).to(device)
+    model.load_state_dict(checkpoint["model_state_dict"])
+    model.eval()
+
+    sample = generate_sample(
+        model=model,
+        tokenizer=tokenizer,
+        prompt=PROMPT,
+        max_new_tokens=MAX_NEW_TOKENS,
+    )
+
+    print(sample)
+
+
+if __name__ == "__main__":
+    main()

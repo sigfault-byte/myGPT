@@ -2,155 +2,222 @@ import torch
 import torch.nn as nn
 from torch.nn import functional as F
 
-from config import (
-    block_size,
-    dropout,
-    n_embd,
-    n_head,
-    n_layer,
-)
-
 
 class Head(nn.Module):
-    """one head of self-attention"""
+    """One head of self-attention."""
 
-    def __init__(self, head_size):
+    def __init__(self, n_embd: int, head_size: int, block_size: int, dropout: float):
         super().__init__()
         self.key = nn.Linear(n_embd, head_size, bias=False)
         self.query = nn.Linear(n_embd, head_size, bias=False)
         self.value = nn.Linear(n_embd, head_size, bias=False)
-        self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size)))
 
+        self.register_buffer("tril", torch.tril(torch.ones(block_size, block_size)))
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
-        # input of size (batch, time-step, channels)
-        # output of size (batch, time-step, head size)
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # x: (B, T, C)
         B, T, C = x.shape
-        k = self.key(x)  # (B,T,hs)
-        q = self.query(x)  # (B,T,hs)
-        # compute attention scores ("affinities")
-        wei = (
-            q @ k.transpose(-2, -1) * k.shape[-1] ** -0.5
-        )  # (B, T, hs) @ (B, hs, T) -> (B, T, T)
-        wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))  # (B, T, T)
-        wei = F.softmax(wei, dim=-1)  # (B, T, T)
+
+        # hs => headsize !
+        k = self.key(x)  # (B, T, hs)
+        q = self.query(x)  # (B, T, hs)
+
+        # attention scores: (B, T, hs) @ (B, hs, T) -> (B, T, T)
+        wei = q @ k.transpose(-2, -1) * (k.shape[-1] ** -0.5)
+
+        # Mask future tokens
+        wei = wei.masked_fill(self.tril[:T, :T] == 0, float("-inf"))
+
+        # normalize attention weights
+        wei = F.softmax(wei, dim=-1)
         wei = self.dropout(wei)
-        # perform the weighted aggregation of the values
-        v = self.value(x)  # (B,T,hs)
+
+        # weighted aggregation of values
+        v = self.value(x)  # (B, T, hs)
         out = wei @ v  # (B, T, T) @ (B, T, hs) -> (B, T, hs)
+
         return out
 
 
 class MultiHeadAttention(nn.Module):
-    """multiple heads of self-attention in parallel"""
+    """Multiple heads of self-attention in parallel."""
 
-    def __init__(self, num_heads, head_size):
+    def __init__(self, n_embd: int, num_heads: int, block_size: int, dropout: float):
         super().__init__()
-        self.heads = nn.ModuleList([Head(head_size) for _ in range(num_heads)])
+        # important ! head_size = int -> must be % must be 0
+        head_size = n_embd // num_heads
+        self.heads = nn.ModuleList(
+            [
+                Head(
+                    n_embd=n_embd,
+                    head_size=head_size,
+                    block_size=block_size,
+                    dropout=dropout,
+                )
+                for _ in range(num_heads)
+            ]
+        )
+
         self.proj = nn.Linear(head_size * num_heads, n_embd)
         self.dropout = nn.Dropout(dropout)
 
-    def forward(self, x):
-        out = torch.cat([h(x) for h in self.heads], dim=-1)
-        out = self.dropout(self.proj(out))
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        out = torch.cat([head(x) for head in self.heads], dim=-1)
+        out = self.proj(out)
+        out = self.dropout(out)
         return out
 
 
-class FeedFoward(nn.Module):
-    """a simple linear layer followed by a non-linearity"""
+class FeedForward(nn.Module):
+    """simple linear layer followed by a non-linearity."""
 
-    def __init__(self, n_embd):
+    # for each token:
+    # process its vectors with aMulti Layer Positron,
+    # works on single token, does not communicate with others !
+
+    def __init__(self, n_embd: int, dropout: float):
         super().__init__()
         self.net = nn.Sequential(
+            # * 4 is straigh from karpathy explaining self attention
+            # expand the dimension 4 times
             nn.Linear(n_embd, 4 * n_embd),
+            # breaking linearity
             nn.ReLU(),
+            # compress back to the required dimensions
             nn.Linear(4 * n_embd, n_embd),
             nn.Dropout(dropout),
         )
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.net(x)
 
 
 class Block(nn.Module):
-    """Transformer block: communication followed by computation"""
+    """Transformer block: communication followed by computation."""
 
-    def __init__(self, n_embd, n_head):
-        # n_embd: embedding dimension, n_head: the number of heads we'd like
+    def __init__(self, n_embd: int, n_head: int, block_size: int, dropout: float):
         super().__init__()
-        head_size = n_embd // n_head
-        self.sa = MultiHeadAttention(n_head, head_size)
-        self.ffwd = FeedFoward(n_embd)
+        self.sa = MultiHeadAttention(
+            n_embd=n_embd,
+            num_heads=n_head,
+            block_size=block_size,
+            dropout=dropout,
+        )
+        self.ffwd = FeedForward(n_embd=n_embd, dropout=dropout)
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
 
-    def forward(self, x):
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # residual connection
         x = x + self.sa(self.ln1(x))
         x = x + self.ffwd(self.ln2(x))
         return x
 
 
 class GPTLanguageModel(nn.Module):
-    def __init__(self, vocab_size):
+    def __init__(
+        self,
+        vocab_size: int,
+        block_size: int,
+        n_embd: int,
+        n_head: int,
+        n_layer: int,
+        dropout: float,
+    ):
         super().__init__()
-        # each token directly reads off the logits for the next token from a lookup table
+
+        self.block_size = block_size
+        self.vocab_size = vocab_size
+        self.n_embd = n_embd
+        self.n_head = n_head
+        self.n_layer = n_layer
+        self.dropout = dropout
+
         self.token_embedding_table = nn.Embedding(vocab_size, n_embd)
         self.position_embedding_table = nn.Embedding(block_size, n_embd)
+
         self.blocks = nn.Sequential(
-            *[Block(n_embd, n_head=n_head) for _ in range(n_layer)]
+            *[
+                Block(
+                    n_embd=n_embd,
+                    n_head=n_head,
+                    block_size=block_size,
+                    dropout=dropout,
+                )
+                for _ in range(n_layer)
+            ]
         )
-        self.ln_f = nn.LayerNorm(n_embd)  # final layer norm
+        # first pass of layer norm before projection on lm head
+        self.ln_f = nn.LayerNorm(n_embd)
         self.lm_head = nn.Linear(n_embd, vocab_size)
 
-        # better init, not covered in the original GPT video, but important, will cover in followup video
+        # better init, not covered in the original GPT video,
+        # but important, will cover in followup video
         self.apply(self._init_weights)
 
-    def _init_weights(self, module):
+    def _init_weights(self, module: nn.Module) -> None:
         if isinstance(module, nn.Linear):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
             if module.bias is not None:
                 torch.nn.init.zeros_(module.bias)
+
         elif isinstance(module, nn.Embedding):
             torch.nn.init.normal_(module.weight, mean=0.0, std=0.02)
 
-    def forward(self, idx, targets=None):
+    def forward(
+        self, idx: torch.Tensor, targets: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor | None]:
         B, T = idx.shape
 
-        # idx and targets are both (B,T) tensor of integers
-        tok_emb = self.token_embedding_table(idx)  # (B,T,C)
-        device_idx = idx.device
-        pos_emb = self.position_embedding_table(
-            torch.arange(T, device=device_idx)
-        )  # (T,C)
-        x = tok_emb + pos_emb  # (B,T,C)
-        x = self.blocks(x)  # (B,T,C)
-        x = self.ln_f(x)  # (B,T,C)
-        logits = self.lm_head(x)  # (B,T,vocab_size)
+        if T > self.block_size:
+            # !!
+            raise ValueError(
+                f"Input sequence length {T} exceeds block_size {self.block_size}"
+            )
+
+        tok_emb = self.token_embedding_table(idx)  # (B, T, C)
+
+        pos = torch.arange(T, device=idx.device)
+        pos_emb = self.position_embedding_table(pos)  # (T, C)
+
+        x = tok_emb + pos_emb  # (B, T, C)
+        x = self.blocks(x)  # (B, T, C)
+        x = self.ln_f(x)  # (B, T, C)
+        logits = self.lm_head(x)  # (B, T, vocab_size)
 
         if targets is None:
             loss = None
-        else:
-            B, T, C = logits.shape
-            logits = logits.view(B * T, C)
-            targets = targets.view(B * T)
-            loss = F.cross_entropy(logits, targets)
+            return logits, loss
+
+        B, T, C = logits.shape
+        # using reshape instead of view
+        logits_flat = logits.reshape(B * T, C)
+        targets_flat = targets.reshape(B * T)
+        loss = F.cross_entropy(logits_flat, targets_flat)
 
         return logits, loss
 
-    def generate(self, idx, max_new_tokens):
-        # idx is (B, T) array of indices in the current context
+    @torch.no_grad()
+    def generate(self, idx: torch.Tensor, max_new_tokens: int) -> torch.Tensor:
+        was_training = self.training
+        self.eval()
+
         for _ in range(max_new_tokens):
-            # crop idx to the last block_size tokens
-            idx_cond = idx[:, -block_size:]
-            # get the predictions
-            logits, loss = self(idx_cond)
-            # focus only on the last time step
-            logits = logits[:, -1, :]  # becomes (B, C)
-            # apply softmax to get probabilities
-            probs = F.softmax(logits, dim=-1)  # (B, C)
-            # sample from the distribution
+            # model was trained with sequences of length `block_size`.
+            # during generation the context keeps growing, so only feed
+            # the last `block_size` tokens (sliding window !)
+            # stop crashing when tweaking max token generation exeeding T
+            idx_cond = idx[:, -self.block_size :]
+
+            logits, _ = self(idx_cond)  # no need for loss
+            logits = logits[:, -1, :]  # (B, vocab_size)
+            probs = F.softmax(logits, dim=-1)
             idx_next = torch.multinomial(probs, num_samples=1)  # (B, 1)
-            # append sampled index to the running sequence
-            idx = torch.cat((idx, idx_next), dim=1)  # (B, T+1)
+
+            idx = torch.cat((idx, idx_next), dim=1)
+
+        if was_training:
+            self.train()
+
         return idx
