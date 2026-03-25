@@ -20,7 +20,7 @@ CONFIGS = {
         "max_iters": 1000,
     },
     "big": {
-        "batch_size": 32,
+        "batch_size": 64,
         "block_size": 256,
         "n_embd": 384,
         "n_head": 6,
@@ -29,7 +29,7 @@ CONFIGS = {
         "learning_rate": 3e-4,
         "eval_interval": 100,
         "eval_iters": 20,
-        "max_iters": 3000,
+        "max_iters": 5000,
     },
 }
 
