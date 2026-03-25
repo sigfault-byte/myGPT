@@ -1,8 +1,7 @@
+from tokenizers import Tokenizer
 from tokenizers.models import BPE
 from tokenizers.pre_tokenizers import Punctuation, Sequence, Whitespace
 from tokenizers.trainers import BpeTrainer
-
-from tokenizers import Tokenizer
 
 # Path to corpus
 files = ["data/rousseau_pol_and_emile_vol1-4-5.txt"]
