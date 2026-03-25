@@ -21,7 +21,7 @@ CONFIGS = {
     },
     "big": {
         "batch_size": 64,
-        "block_size": 256,
+        "block_size": 512,
         "n_embd": 384,
         "n_head": 6,
         "n_layer": 6,

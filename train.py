@@ -40,7 +40,7 @@ if TOKENIZER_NAME is None:
     raise ValueError("Choose a tokenizer: 'char' or 'bpe'")
 
 # file input
-file = "data/rousseau_ouvrage_pol_Vol1.txt"
+file = "data/rousseau_pol_and_emile_vol1-4-5.txt"
 with open(file, "r", encoding="utf-8") as f:
     text = f.read()
 

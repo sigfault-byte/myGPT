@@ -9,12 +9,12 @@ from models.myGPT import GPTLanguageModel
 from my_tokenizers.bigram_tokenizer import CharLevelTokenizer
 from my_tokenizers.bpe_tokenizer import BPETokenizer
 
-RUN_DIR = Path("runs/20260325-102949_bs16_blk128_emb128_h4_l4")
+RUN_DIR = Path("runs/20260325-130314_bs64_blk512_emb384_h6_l6")
 CHECKPOINT_PATH = RUN_DIR / "checkpoint_last.pt"
 CONFIG_PATH = RUN_DIR / "run.json"
 
-PROMPT = "la religion est"
-MAX_NEW_TOKENS = 500
+PROMPT = "Comment éduquer un enfan?"
+MAX_NEW_TOKENS = 5000
 
 
 def load_run_config(config_path: Path) -> dict:
