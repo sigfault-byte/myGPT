@@ -33,6 +33,27 @@ eval_interval = run_config["eval_interval"]
 eval_iters = run_config["eval_iters"]
 max_iters = run_config["max_iters"]
 
+
+def print_run_config(run_config, device):
+    print("\n" + "=" * 50)
+    print("RUN CONFIG")
+    print("=" * 50)
+
+    print(f"Device        : {device}")
+    print(f"Batch size (B): {run_config['batch_size']}")
+    print(f"Block size (T): {run_config['block_size']}")
+    print(f"Embedding (C) : {run_config['n_embd']}")
+    print(f"Heads         : {run_config['n_head']}")
+    print(f"Layers        : {run_config['n_layer']}")
+    print(f"Dropout       : {run_config['dropout']}")
+    print(f"Learning rate : {run_config['learning_rate']}")
+    print(f"Max iters     : {run_config['max_iters']}")
+
+    print("=" * 50 + "\n")
+
+
+print_run_config(run_config, device)
+
 TOKENIZER_NAME = args.tokenizer
 
 # ... just in case
