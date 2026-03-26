@@ -20,11 +20,11 @@ CONFIGS = {
         "max_iters": 1000,
     },
     "big": {
-        "batch_size": 64,
+        "batch_size": 16,
         "block_size": 512,
         "n_embd": 384,
         "n_head": 6,
-        "n_layer": 5,
+        "n_layer": 6,
         "dropout": 0.2,
         "learning_rate": 3e-4,
         "eval_interval": 100,
