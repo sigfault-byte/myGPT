@@ -149,7 +149,7 @@ model = GPTLanguageModel(
 
 # print the number of parameters from the model
 params = sum(p.numel() for p in model.parameters()) / 1e6
-print(sum(p.numel() for p in model.parameters()) / 1e6, "M parameters")
+print(f"{params} M parameters")
 
 # create a PyTorch optimizer
 optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
@@ -194,7 +194,7 @@ for iter in range(max_iters):
     # sample a batch of data
     xb, yb = get_batch("train")
 
-    # bit of Paranoia
+    # bit of paranoia
     assert xb.device == next(model.parameters()).device
     assert yb.device == next(model.parameters()).device
 

@@ -181,9 +181,21 @@ class GPTLanguageModel(nn.Module):
         pos = torch.arange(T, device=idx.device)
         pos_emb = self.position_embedding_table(pos)  # (T, C)
 
+        # raw representation (not normalized !)
         x = tok_emb + pos_emb  # (B, T, C)
+
+        # repeated refinement:
+        # each block:
+        #   - normalizes input locally
+        #   - computes update
+        #   - adds it back
+        #   - x is not normalized at all yet
         x = self.blocks(x)  # (B, T, C)
+
+        # first time the **WHOLE** representation is normalized
         x = self.ln_f(x)  # (B, T, C)
+
+        # projection to vocab
         logits = self.lm_head(x)  # (B, T, vocab_size)
 
         if targets is None:
