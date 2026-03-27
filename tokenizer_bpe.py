@@ -17,7 +17,7 @@ tokenizer.decoder = ByteLevelDecoder()
 
 # Trainer
 trainer = BpeTrainer(
-    vocab_size=4096,
+    vocab_size=1024,
     min_frequency=2,
     special_tokens=["[UNK]"],
 )
@@ -26,7 +26,7 @@ trainer = BpeTrainer(
 tokenizer.train(files, trainer)
 
 # Save
-tokenizer.save("rousseau_bpe4096_vol1-4-5.json")
+tokenizer.save("rousseau_bpe1024_vol1-4-5.json")
 
 print("Tokenizer trained and saved!")
 print("Vocab size:", tokenizer.get_vocab_size())
