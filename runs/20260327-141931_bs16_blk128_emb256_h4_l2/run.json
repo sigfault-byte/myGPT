@@ -1,0 +1,20 @@
+{
+  "batch_size": 16,
+  "block_size": 128,
+  "n_embd": 256,
+  "n_head": 4,
+  "n_layer": 2,
+  "dropout": 0.25,
+  "params_millions": 2.136576,
+  "learning_rate": 5e-05,
+  "dataset": {
+    "path": "data/rousseau_pol_and_emile_vol1-4-5.txt",
+    "chars": 2342523,
+    "millions": 2.342523
+  },
+  "tokenizer": {
+    "name": "bpe",
+    "tokenizer_path": "rousseau_bpe1024_vol1-4-5.json"
+  },
+  "vocab_size": 1024
+}

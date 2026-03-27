@@ -26,10 +26,10 @@ CONFIGS = {
         "n_head": 4,
         "n_layer": 2,
         "dropout": 0.25,
-        "learning_rate": 1e-4,
+        "learning_rate": 5e-5,
         "eval_interval": 100,
         "eval_iters": 20,
-        "max_iters": 5000,
+        "max_iters": 20000,
     },
 }
 
