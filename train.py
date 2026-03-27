@@ -78,7 +78,7 @@ def build_tokenizer(tokenizer_name: str, text: str):
         return tokenizer, tokenizer_config
     # BPT tokenizer
     if tokenizer_name == "bpe":
-        tokenizer_path = "rousseau_bpe1024_vol1-4-5.json"
+        tokenizer_path = "rousseau_bpe_metaspace_1024.json"
         tokenizer = BPETokenizer(tokenizer_path)
         tokenizer_config = {
             "name": "bpe",
