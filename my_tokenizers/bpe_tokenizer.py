@@ -12,3 +12,10 @@ class BPETokenizer:
 
     def decode(self, ids: list[int]) -> str:
         return self.tokenizer.decode(ids)
+
+    def tokens(self, text: str) -> list[str]:
+        return self.tokenizer.encode(text).tokens
+
+    def encode_with_tokens(self, text: str) -> tuple[list[int], list[str]]:
+        enc = self.tokenizer.encode(text)
+        return enc.ids, enc.tokens
