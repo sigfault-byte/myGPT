@@ -9,11 +9,11 @@ from models.myGPT import GPTLanguageModel
 from my_tokenizers.bigram_tokenizer import CharLevelTokenizer
 from my_tokenizers.bpe_tokenizer import BPETokenizer
 
-RUN_DIR = Path("runs/20260325-184813_bs64_blk512_emb384_h6_l5")
+RUN_DIR = Path("runs/20260328-124239_bs32_blk256_emb768_h12_l6")
 CHECKPOINT_PATH = RUN_DIR / "checkpoint_last.pt"
 CONFIG_PATH = RUN_DIR / "run.json"
 
-PROMPT = "La religion est"
+PROMPT = "La liberté de l’enfans est"
 MAX_NEW_TOKENS = 500
 
 
