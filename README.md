@@ -4,7 +4,8 @@
 
 This repository contains a series of quick experiments training small GPT-style language models from scratch on a limited corpus (~2MB → ~10MB) of 18th-century French texts (Rousseau and later contemporaries).
 
-The goal is not to achieve production quality text generation, but to explore:
+The goal is not to achieve production quality text generation, but to explore: 
+
 	- the impact of dataset size
 	- tokenizer choice (char vs BPE)
 	- model capacity vs data scale
